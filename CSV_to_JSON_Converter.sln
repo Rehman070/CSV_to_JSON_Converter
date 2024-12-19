@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSV_to_JSON_Converter", "CSV_to_JSON_Converter.csproj", "{0A443C64-AC27-49B6-A236-31BF499DDF7A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A443C64-AC27-49B6-A236-31BF499DDF7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A443C64-AC27-49B6-A236-31BF499DDF7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A443C64-AC27-49B6-A236-31BF499DDF7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A443C64-AC27-49B6-A236-31BF499DDF7A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F937CC3-A299-477B-A2FB-E09A75902DFE}
+	EndGlobalSection
+EndGlobal
