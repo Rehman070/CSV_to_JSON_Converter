@@ -8,106 +8,134 @@ class Program
 {
     static void Main(string[] args)
     {
-        // Get the path of the CSV file from user input
-        string csvFilePath = GetCsvFilePathFromUser();
-        if (csvFilePath == null) return; // Exit if invalid path
+        while (true)
+        {
+            Console.WriteLine("Select an option:");
+            Console.WriteLine("1 - Convert CSV to JSON");
+            Console.WriteLine("2 - Remove Key-Value Pairs from JSON");
+            Console.WriteLine("0 - Exit");
 
-        // Get the output JSON file path from user input
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    ConvertCsvToJsonService();
+                    break;
+                case "2":
+                    RemoveKeyValuePairsFromJsonService();
+                    break;
+                case "0":
+                    Console.WriteLine("Exiting application. Goodbye!");
+                    return;
+                default:
+                    Console.WriteLine("Invalid option. Please try again.");
+                    break;
+            }
+        }
+    }
+
+    static void ConvertCsvToJsonService()
+    {
+        string csvFilePath = GetCsvFilePathFromUser();
+        if (csvFilePath == null) return;
+
         string jsonFilePath = GetJsonFilePathFromUser();
-        if (jsonFilePath == null) return; // Exit if invalid path
+        if (jsonFilePath == null) return;
 
         try
         {
-            // Convert CSV to JSON and save it to the specified file
             var jsonContent = ConvertCsvToJson(csvFilePath);
             File.WriteAllText(jsonFilePath, jsonContent);
-
             Console.WriteLine($"CSV to JSON conversion successful. The JSON file is saved at: {jsonFilePath}");
-        }
-        catch (FileNotFoundException ex)
-        {
-            Console.WriteLine($"File not found: {ex.FileName}. Please check the file path and try again.");
-        }
-        catch (UnauthorizedAccessException)
-        {
-            Console.WriteLine("You do not have permission to access this file or directory. Please check the file's permissions.");
-        }
-        catch (DirectoryNotFoundException)
-        {
-            Console.WriteLine("The directory specified for the output file does not exist. Please provide a valid directory.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An unexpected error occurred: {ex.Message}. Please check the file and try again.");
+            Console.WriteLine($"An error occurred: {ex.Message}");
         }
-
-        // Pause before closing the console
-        Console.WriteLine("Press Enter to exit...");
-        Console.ReadLine();  // Wait for the user to press Enter before closing
     }
 
-    // Method to get CSV file path from user with validation
+    static void RemoveKeyValuePairsFromJsonService()
+    {
+        Console.WriteLine("Enter the path of the JSON file:");
+        string jsonFilePath = Console.ReadLine();
+
+        if (string.IsNullOrEmpty(jsonFilePath) || !File.Exists(jsonFilePath) || Path.GetExtension(jsonFilePath).ToLower() != ".json")
+        {
+            Console.WriteLine("Invalid JSON file path. Please try again.");
+            return;
+        }
+
+        try
+        {
+            string jsonContent = File.ReadAllText(jsonFilePath);
+            var jsonObject = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(jsonContent);
+
+            if (jsonObject == null || jsonObject.Count == 0)
+            {
+                Console.WriteLine("The JSON file is empty or not in the expected format.");
+                return;
+            }
+
+            Console.WriteLine("Enter the keys to remove (comma-separated):");
+            string keysToRemoveInput = Console.ReadLine();
+
+            if (string.IsNullOrEmpty(keysToRemoveInput))
+            {
+                Console.WriteLine("No keys provided. Operation canceled.");
+                return;
+            }
+
+            var keysToRemove = keysToRemoveInput.Split(',').Select(k => k.Trim()).ToList();
+
+            foreach (var obj in jsonObject)
+            {
+                foreach (var key in keysToRemove)
+                {
+                    obj.Remove(key);
+                }
+            }
+
+            string updatedJsonContent = JsonConvert.SerializeObject(jsonObject, Formatting.Indented);
+            File.WriteAllText(jsonFilePath, updatedJsonContent);
+
+            Console.WriteLine("Key-value pairs removed successfully. The updated JSON file is saved at the same location.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+    }
+
     static string GetCsvFilePathFromUser()
     {
         Console.WriteLine("Enter the path of the CSV file:");
-
         string csvFilePath = Console.ReadLine();
 
-        // Validate if the file exists and if it's a CSV file
-        if (string.IsNullOrEmpty(csvFilePath))
+        if (string.IsNullOrEmpty(csvFilePath) || !File.Exists(csvFilePath) || Path.GetExtension(csvFilePath).ToLower() != ".csv")
         {
-            Console.WriteLine("The file path cannot be empty. Please enter a valid CSV file path.");
-            return null;
-        }
-
-        if (!File.Exists(csvFilePath))
-        {
-            Console.WriteLine($"The file '{csvFilePath}' does not exist. Please check the file path and try again.");
-            return null;
-        }
-
-        if (Path.GetExtension(csvFilePath).ToLower() != ".csv")
-        {
-            Console.WriteLine("Please provide a valid CSV file. Only CSV files are allowed.");
+            Console.WriteLine("Invalid CSV file path. Please try again.");
             return null;
         }
 
         return csvFilePath;
     }
 
-    // Method to get JSON output file path from user with validation
     static string GetJsonFilePathFromUser()
     {
         Console.WriteLine("Enter the output JSON file path:");
-
         string jsonFilePath = Console.ReadLine();
 
-        // Validate if the path is empty or if directory does not exist
-        if (string.IsNullOrEmpty(jsonFilePath))
-        {
-            Console.WriteLine("The output file path cannot be empty. Please enter a valid path.");
-            return null;
-        }
-
-        // Ensure directory exists, if not, inform the user
         string directoryPath = Path.GetDirectoryName(jsonFilePath);
-        if (!Directory.Exists(directoryPath))
+        if (string.IsNullOrEmpty(jsonFilePath) || !Directory.Exists(directoryPath) || Path.GetExtension(jsonFilePath).ToLower() != ".json")
         {
-            Console.WriteLine($"The directory '{directoryPath}' does not exist. Please provide a valid directory path.");
-            return null;
-        }
-
-        // Check for valid file extension
-        if (Path.GetExtension(jsonFilePath).ToLower() != ".json")
-        {
-            Console.WriteLine("Please provide a valid JSON file path with a '.json' extension.");
+            Console.WriteLine("Invalid JSON file path. Please try again.");
             return null;
         }
 
         return jsonFilePath;
     }
 
-    // Method to convert CSV file content to JSON
     static string ConvertCsvToJson(string csvFilePath)
     {
         using var reader = new StreamReader(csvFilePath);
@@ -119,12 +147,11 @@ class Program
         try
         {
             var records = csv.GetRecords<dynamic>().ToList();
-            var jsonContent = JsonConvert.SerializeObject(records, Formatting.Indented);
-            return jsonContent;
+            return JsonConvert.SerializeObject(records, Formatting.Indented);
         }
-        catch (CsvHelperException)
+        catch (Exception ex)
         {
-            Console.WriteLine("Error reading the CSV file. Please ensure the CSV format is correct.");
+            Console.WriteLine($"Error reading the CSV file: {ex.Message}");
             throw;
         }
     }
